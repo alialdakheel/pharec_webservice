@@ -1,16 +1,16 @@
 from typing import Optional
-
+from pathlib import Path
 from fastapi import FastAPI, APIRouter
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 
-from screenshot import collect_image
+from screenshot import collect_image, url_path
+from pharec import Pharec
 
 origins = [
     "http://localhost:4000",
     "http://localhost:8000",
 ]
-
 
 app = FastAPI()
 app.add_middleware(
@@ -22,6 +22,11 @@ app.add_middleware(
 )
 
 router = APIRouter(prefix="/api/v1")
+
+image_size = (256, 512) # height, width
+model_path = "models/2021-12-11_18;40;33.772059_wpd2_valacc0.9462_e8_b16.tf"
+
+pharec = Pharec(model_path, image_size)
 
 """
     One get("/") endpoint to serve frontend
@@ -36,13 +41,19 @@ class check_url_req(BaseModel):
 def read_root():
     return {"Hello": "World"}
 
-
-@router.get("/items/{item_id}")
-def read_item(item_id: int, q: Optional[str] = None, a: Optional[int] = None):
-    return {"item_id": item_id, "q": q, "a": a}
-
 @router.post("/check_url")
 def read_item(url_req: check_url_req):
-    return {"url": url_req.url, "pass": 1}
+    url = url_req.url
+    image_path = f"collected_images/img_{url_path(url)}.png" 
+    if not Path(image_path).exists():
+        collect_image(url)
+        print("Screenshot taken... : path", image_path)
+
+    image = pharec.load_image(image_path)
+    print("Image loaded... : image shape", image.shape)
+    pred_domain = pharec.predict_domain(image)
+    print("Predicted domain:", pred_domain)
+
+    return {"url": url_req.url, "predicted_domain": pred_domain}
 
 app.include_router(router)
