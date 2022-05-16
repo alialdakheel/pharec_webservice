@@ -1,4 +1,5 @@
 __*
 *.log
 models
+collected_images/*.png
 

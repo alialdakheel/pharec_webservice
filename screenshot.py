@@ -11,9 +11,12 @@ def collect_image(url):
     browser.driver.set_window_size(width, height)
     print("Browser size", browser.driver.get_window_size())
     browser.visit(url)
-    image_path = (Path("./") / f"collected_images/img_{url.split('//')[-1]}_").absolute()
+    image_path = (Path("./") / f"collected_images/img_{url_path(url)}").absolute()
     browser.screenshot(
-        str(image_path)
+        str(image_path),
+        unique_file=False
     )
     browser.quit()
 
+def url_path(url):
+    return url.strip('/').split('//')[-1]
