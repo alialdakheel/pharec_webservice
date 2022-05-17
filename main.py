@@ -3,23 +3,12 @@ from pathlib import Path
 from fastapi import FastAPI, APIRouter
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from screenshot import collect_image, url_path
 from pharec import Pharec
 
-origins = [
-    "http://localhost:4000",
-    "http://localhost:8000",
-]
-
 app = FastAPI()
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 router = APIRouter(prefix="/api/v1")
 
@@ -37,10 +26,6 @@ class check_url_req(BaseModel):
     url: str
     description: Optional[str] = None
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
 @router.post("/check_url")
 def read_item(url_req: check_url_req):
     url = url_req.url
@@ -54,6 +39,12 @@ def read_item(url_req: check_url_req):
     pred_domain = pharec.predict_domain(image)
     print("Predicted domain:", pred_domain)
 
-    return {"url": url_req.url, "predicted_domain": pred_domain}
+    return {
+        "url": url_req.url,
+        "predicted_domain": pred_domain,
+        "image_path": image_path
+    }
 
 app.include_router(router)
+app.mount('/collected_images', StaticFiles(directory='collected_images'))
+app.mount('/', StaticFiles(directory='pharec_frontend/dist', html=True))
