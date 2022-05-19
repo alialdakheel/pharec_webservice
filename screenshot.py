@@ -19,4 +19,13 @@ def collect_image(url):
     browser.quit()
 
 def url_path(url):
-    return url.strip('/').split('//')[-1]
+    if url[:7] == "http://":
+        lim = 7
+    else:
+        lim = 8
+
+    return (
+        url[lim:].strip('/')
+        .strip()
+        .replace('/', '__')
+    )
