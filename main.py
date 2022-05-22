@@ -4,11 +4,22 @@ from fastapi import FastAPI, APIRouter
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 from screenshot import collect_image, url_path
 from pharec import Pharec
 
 app = FastAPI()
+
+limiter = Limiter(
+    key_func=get_remote_address,
+    default_limits=["200/minute"],
+)
+app = FastAPI()
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 router = APIRouter(prefix="/api/v1")
 
@@ -23,11 +34,12 @@ pharec = Pharec(model_path, image_size)
 """
 
 class check_url_req(BaseModel):
-    url: str
+    url: constr(min_length=8, max_length=26)
     description: Optional[str] = None
 
 @router.post("/check_url")
-def read_item(url_req: check_url_req):
+@limiter.limit("100/minute")
+def read_item(request: Request, url_req: check_url_req):
     url = url_req.url
     image_path = f"collected_images/img_{url_path(url)}.png" 
     if not Path(image_path).exists():
