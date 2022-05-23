@@ -182,12 +182,13 @@ class Pharec:
                     input_shape=(self.image_width, self.image_height, 3)
                 )(image)
             )
-        ).numpy()
+        ).numpy().squeeze(axis=0)
         self.pred_class = np.argmax(self.probits)
         return self.get_predicted_domain()
 
     def get_predicted_domain(self):
-        return self.class_names[self.pred_class], self.probits[self.pred_class]
+        self.pred_conf = np.around(self.probits[self.pred_class] * 100, 2)
+        return self.class_names[self.pred_class], self.pred_conf
 
     def load_image(self, image_path): 
         return tf.expand_dims(
