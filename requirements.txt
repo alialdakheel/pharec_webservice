@@ -28,7 +28,7 @@ Keras-Preprocessing==1.1.2
 libclang==14.0.1
 limits==1.6
 Markdown==3.3.7
-numpy=>1.21.0, <1.23.0
+numpy>=1.21.0, <1.23.0
 oauthlib==3.2.0
 opt-einsum==3.3.0
 outcome==1.1.0
