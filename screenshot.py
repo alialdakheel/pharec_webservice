@@ -1,4 +1,5 @@
 from splinter import Browser
+from tldextract import extract
 from pathlib import Path
 
 
@@ -29,3 +30,6 @@ def url_path(url):
         .strip()
         .replace('/', '__')
     )
+
+def get_domain(url):
+    return extract(url).domain
