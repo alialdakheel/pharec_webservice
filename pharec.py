@@ -175,7 +175,7 @@ class Pharec:
         self.model = keras.models.load_model(model_path)
 
     def predict_domain(self, image):
-        self.preds = tf.nn.softmax(
+        self.probits = tf.nn.softmax(
             self.model.predict(
                 tf.keras.layers.Rescaling(
                     1./255,
@@ -183,11 +183,11 @@ class Pharec:
                 )(image)
             )
         ).numpy()
-        self.pred_class = np.argmax(self.preds)
+        self.pred_class = np.argmax(self.probits)
         return self.get_predicted_domain()
 
     def get_predicted_domain(self):
-        return self.class_names[self.pred_class]
+        return self.class_names[self.pred_class], self.probits[self.pred_class]
 
     def load_image(self, image_path): 
         return tf.expand_dims(

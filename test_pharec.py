@@ -7,6 +7,6 @@ image_path = "collected_images/img_google.com_mzq9nrvk.png"
 pharec = Pharec(model_path, image_size)
 image = pharec.load_image(image_path)
 print("Image loaded... : image shape", image.shape)
-pred_domain = pharec.predict_domain(image)
-print("Predicted domain:", pred_domain)
+pred_domain, pred_conf = pharec.predict_domain(image)
+print("Predicted domain:", pred_domain, "with confidence:", pred_conf)
 
