@@ -8,7 +8,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
-from screenshot import collect_image, url_path
+from screenshot import collect_image, url_path, get_domain
 from pharec import Pharec
 
 app = FastAPI()
@@ -34,7 +34,7 @@ pharec = Pharec(model_path, image_size)
 """
 
 class check_url_req(BaseModel):
-    url: constr(min_length=8, max_length=26)
+    url: constr(min_length=8, max_length=40)
     description: Optional[str] = None
 
 @router.post("/check_url")
@@ -48,12 +48,14 @@ def read_item(request: Request, url_req: check_url_req):
 
     image = pharec.load_image(image_path)
     print("Image loaded... : image shape", image.shape)
-    pred_domain = pharec.predict_domain(image)
+    pred_domain, pred_conf = pharec.predict_domain(image)
     print("Predicted domain:", pred_domain)
 
     return {
         "url": url_req.url,
         "predicted_domain": pred_domain,
+        "predicted_phish": pred_domain == get_domain(url),
+        "predicted_conf": pred_conf,
         "image_path": image_path
     }
 
