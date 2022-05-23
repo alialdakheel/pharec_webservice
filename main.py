@@ -54,7 +54,7 @@ def read_item(request: Request, url_req: check_url_req):
     return {
         "url": url_req.url,
         "predicted_domain": pred_domain,
-        "predicted_phish": pred_domain == get_domain(url),
+        "predicted_phish": pred_domain != get_domain(url),
         "predicted_conf": pred_conf,
         "image_path": image_path
     }
