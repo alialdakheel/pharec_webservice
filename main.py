@@ -30,6 +30,7 @@ pharec = Pharec(model_path, image_size)
 
 """
     One get("/") endpoint to serve frontend
+    One get("/supported_domains") endpoint to serve frontend
     One post("/check_url") endpoint to screenshot and run model
 """
 
@@ -39,7 +40,7 @@ class check_url_req(BaseModel):
 
 @router.post("/check_url")
 @limiter.limit("100/minute")
-def read_item(request: Request, url_req: check_url_req):
+def check_url(request: Request, url_req: check_url_req):
     url = url_req.url
     image_path = f"collected_images/img_{url_path(url)}.png" 
     if not Path(image_path).exists():
@@ -57,6 +58,13 @@ def read_item(request: Request, url_req: check_url_req):
         "predicted_phish": pred_domain != get_domain(url),
         "predicted_conf": pred_conf,
         "image_path": image_path
+    }
+
+@router.post("/supported_domains")
+@limiter.limit("5/minute")
+def check_url(request: Request):
+    return {
+        "supported_domains": pharec.class_names
     }
 
 app.include_router(router)
